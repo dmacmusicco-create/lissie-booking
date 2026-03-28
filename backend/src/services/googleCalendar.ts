@@ -96,16 +96,7 @@ export async function fetchAvailability(days: number = 180): Promise<DayAvailabi
 
     const events = response.data.items || [];
 
-    // Also fetch free/busy info for precise availability
-    const freeBusyResponse = await calendar.freebusy.query({
-      requestBody: {
-        timeMin: start.toISOString(),
-        timeMax: end.toISOString(),
-        items: [{ id: 'primary' }],
-      },
-    });
-
-    const busySlots = freeBusyResponse.data.calendars?.primary?.busy || [];
+   
 
     // Build day-by-day availability map
     const availability: DayAvailability[] = [];
@@ -121,13 +112,7 @@ export async function fetchAvailability(days: number = 180): Promise<DayAvailabi
       const dayEnd = new Date(day);
       dayEnd.setHours(23, 59, 59, 999);
 
-      const isBusy = busySlots.some(slot => {
-        if (!slot.start || !slot.end) return false;
-        const slotStart = new Date(slot.start);
-        const slotEnd = new Date(slot.end);
-        return slotStart < dayEnd && slotEnd > dayStart;
-      });
-
+      const isBusy = dayEvents.length > 0;
       // Get events for this specific day
       const dayEvents: EventSummary[] = events
         .filter(event => {
