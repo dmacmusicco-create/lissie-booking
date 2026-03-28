@@ -22,7 +22,7 @@ export interface BookingPayload {
 }
 
 export async function fetchAvailability(days: number = 60): Promise<DayAvailability[]> {
-  const res = await fetch(`${API_BASE}/api/calendar/availability?days=${days}`, {
+  const res = await fetch(`${API_BASE}/api/calendar/availability?days=120`, {
     cache: 'no-store',
   });
   if (!res.ok) throw new Error('Failed to fetch availability');
@@ -54,3 +54,4 @@ export async function adminFetch(path: string, options: RequestInit = {}) {
   });
   return res.json();
 }
+
