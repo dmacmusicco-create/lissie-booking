@@ -1,19 +1,26 @@
 import winston from 'winston';
 
+const transports: winston.transport[] = [
+  new winston.transports.Console(),
+];
+
 export const logger = winston.createLogger({
-  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  level: 'info',
   format: winston.format.combine(
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     winston.format.errors({ stack: true }),
     winston.format.colorize(),
-    winston.format.printf(({ timestamp, level, message, ...meta }) => {
-      const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
-      return `[${timestamp}] ${level}: ${message}${metaStr}`;
+    winston.format.printf(({ timestamp, level, message }) => {
+      return `[${timestamp}] ${level}: ${message}`;
     })
   ),
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' }),
-  ],
+  transports,
 });
+```
+
+Click **File → Save**, then go back to PowerShell Tab 2 and run:
+```
+cd "C:\Users\dmacm\lissie-booking\booking-system"
+git add .
+git commit -m "Fix logger for Vercel"
+git push origin main
