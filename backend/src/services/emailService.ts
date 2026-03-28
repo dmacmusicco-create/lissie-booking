@@ -19,6 +19,7 @@ export interface Client {
 }
 
 // ─── Transporter ─────────────────────────────────────────────────────────────
+
 function createTransporter() {
   return nodemailer.createTransport({
     service: 'gmail',
@@ -26,9 +27,11 @@ function createTransporter() {
       user: process.env.GMAIL_USER,
       pass: process.env.GMAIL_APP_PASSWORD,
     },
+    tls: {
+      rejectUnauthorized: false,
+    },
   });
 }
-
 // ─── Send Booking Notification to Derrick ────────────────────────────────────
 export async function sendBookingNotification(booking: BookingRequest): Promise<void> {
   const transporter = createTransporter();
