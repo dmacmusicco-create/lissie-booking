@@ -67,13 +67,21 @@ bookingRouter.post(
 
     try {
       // Send notification to Derrick
-      await sendBookingNotification({ name, email, phone, eventDate, notes });
+   try {
+        await sendBookingNotification({ name, email, phone, eventDate, notes });
+        logger.info(`Notification email sent for ${eventDate}`);
+      } catch (emailErr: any) {
+        logger.error(`Email failed: ${emailErr.message}`);
+      }
 
-      // Send confirmation to client
-      await sendClientConfirmation({ name, email, phone, eventDate, notes });
+      try {
+        await sendClientConfirmation({ name, email, phone, eventDate, notes });
+        logger.info(`Confirmation email sent to ${email}`);
+      } catch (emailErr: any) {
+        logger.error(`Confirmation email failed: ${emailErr.message}`);
+      }
 
-      logger.info(`Booking request processed: ${name} for ${eventDate}`);
-
+      logger.info(`Booking request processed: ${name} for ${eventDate}`);   
       res.json({
         success: true,
         message: 'Your booking request has been received. We will be in touch shortly.',
