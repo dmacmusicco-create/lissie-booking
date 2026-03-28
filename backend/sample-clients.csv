@@ -1,0 +1,9 @@
+# Sample client list - replace with your real clients
+# Format: Name, Email
+# Lines starting with # are ignored
+
+Client One, client1@example.com
+Client Two, client2@example.com
+Client Three, client3@example.com
+Client Four, client4@example.com
+Client Five, client5@example.com

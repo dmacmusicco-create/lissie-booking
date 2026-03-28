@@ -1,0 +1,9 @@
+[
+  {
+    "id": "1",
+    "name": "Client Name",
+    "email": "client@example.com",
+    "active": true,
+    "addedAt": "2024-01-01"
+  }
+]
