@@ -31,3 +31,4 @@ calendarRouter.post('/refresh', requireAdminSecret, async (_req: Request, res: R
     res.status(503).json({ success: false, error: 'Failed to refresh' });
   }
 });
+

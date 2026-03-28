@@ -64,7 +64,7 @@ export async function exchangeCodeForTokens(code: string) {
 }
 
 // ─── Fetch Availability ──────────────────────────────────────────────────────
-export async function fetchAvailability(days: number = 180): Promise<DayAvailability[]> {
+export async function fetchAvailability(days: number = 90): Promise<DayAvailability[]> {
   // Return cached data if fresh
   if (cache && Date.now() - cache.timestamp < CACHE_TTL && cache.data.length >= days) {
     return cache.data.slice(0, days);
@@ -196,4 +196,5 @@ export function invalidateCache(): void {
   cache = null;
   logger.info('Calendar cache invalidated');
 }
+
 
