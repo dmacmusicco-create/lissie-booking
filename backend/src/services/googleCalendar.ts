@@ -137,4 +137,14 @@ export async function fetchAvailability(days: number = 60): Promise<DayAvailabil
 
   try {
     const auth = getOAuth2Client();
-    const calend
+    const calendyEventOnDate(event: any, dateStr: string): boolean {
+  if (!event.start?.date) return false;
+  const eventStart = event.start.date;
+  const eventEnd = event.end?.date || event.start.date;
+  return dateStr >= eventStart && dateStr < eventEnd;
+}
+
+export function invalidateCache(): void {
+  cache = null;
+  logger.info('Calendar cache invalidated');
+}
