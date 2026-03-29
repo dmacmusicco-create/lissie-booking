@@ -23,6 +23,7 @@ interface CacheEntry {
 
 let cache: CacheEntry | null = null;
 const CACHE_TTL = parseInt(process.env.CACHE_TTL_MS || '120000');
+const TIMEZONE = 'America/Chicago';
 
 export function getOAuth2Client(): OAuth2Client {
   const client = new google.auth.OAuth2(
@@ -54,6 +55,22 @@ export async function exchangeCodeForTokens(code: string) {
   return tokens;
 }
 
+// Format a date as YYYY-MM-DD in Central Time
+function formatDateCT(date: Date): string {
+  return date.toLocaleDateString('en-CA', { timeZone: TIMEZONE });
+}
+
+// Get today's date string in Central Time
+function getTodayCT(): string {
+  return new Date().toLocaleDateString('en-CA', { timeZone: TIMEZONE });
+}
+
+// Get the Central Time date string for a given event start string
+function getEventDateCT(dateTimeStr: string): string {
+  const d = new Date(dateTimeStr);
+  return d.toLocaleDateString('en-CA', { timeZone: TIMEZONE });
+}
+
 export async function fetchAvailability(days: number = 60): Promise<DayAvailability[]> {
   if (cache && Date.now() - cache.timestamp < CACHE_TTL && cache.data.length >= days) {
     return cache.data.slice(0, days);
@@ -65,13 +82,12 @@ export async function fetchAvailability(days: number = 60): Promise<DayAvailabil
     const auth = getOAuth2Client();
     const calendar = google.calendar({ version: 'v3', auth });
 
-    const now = new Date();
-    const start = new Date(now);
-    start.setHours(0, 0, 0, 0);
+    // Start of today in Central Time
+    const todayCT = getTodayCT();
+    const start = new Date(todayCT + 'T00:00:00');
 
-    const end = new Date(now);
+    const end = new Date(start);
     end.setDate(end.getDate() + days);
-    end.setHours(23, 59, 59, 999);
 
     const response = await calendar.events.list({
       calendarId: 'primary',
@@ -80,6 +96,7 @@ export async function fetchAvailability(days: number = 60): Promise<DayAvailabil
       singleEvents: true,
       orderBy: 'startTime',
       maxResults: 500,
+      timeZone: TIMEZONE,
     });
 
     const events = response.data.items || [];
@@ -88,14 +105,18 @@ export async function fetchAvailability(days: number = 60): Promise<DayAvailabil
     for (let i = 0; i < days; i++) {
       const day = new Date(start);
       day.setDate(day.getDate() + i);
-      const dateStr = formatDate(day);
+      const dateStr = formatDateCT(day);
 
       const dayEvents: EventSummary[] = events
         .filter(event => {
-          const eventStart = event.start?.dateTime || event.start?.date;
+          // All-day events have a date field
+          if (event.start?.date) {
+            return isAllDayEventOnDate(event, dateStr);
+          }
+          // Timed events - check in Central Time
+          const eventStart = event.start?.dateTime;
           if (!eventStart) return false;
-          const eventDate = new Date(eventStart);
-          return formatDate(eventDate) === dateStr || isAllDayEventOnDate(event, dateStr);
+          return getEventDateCT(eventStart) === dateStr;
         })
         .map(event => ({
           id: event.id || '',
@@ -115,7 +136,7 @@ export async function fetchAvailability(days: number = 60): Promise<DayAvailabil
     }
 
     cache = { data: availability, timestamp: Date.now() };
-    logger.info(`Fetched ${availability.length} days of availability`);
+    logger.info(`Fetched ${availability.length} days of availability (Central Time)`);
     return availability;
 
   } catch (error) {
@@ -144,14 +165,10 @@ export async function blockDate(date: string, reason: string = 'Blocked'): Promi
   logger.info(`Blocked date: ${date}`);
 }
 
-function formatDate(date: Date): string {
-  return date.toISOString().split('T')[0];
-}
-
 function getNextDay(dateStr: string): string {
   const d = new Date(dateStr);
   d.setDate(d.getDate() + 1);
-  return formatDate(d);
+  return d.toISOString().split('T')[0];
 }
 
 function isAllDayEventOnDate(event: any, dateStr: string): boolean {
