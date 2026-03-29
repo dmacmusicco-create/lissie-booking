@@ -34,7 +34,7 @@ const WORK_KEYWORDS = [
   'panavid','parker university','pearson technology','perfect sound','pmsiav',
   'precision productions','prg','projection','revolution event',
   'rocket man media','select media resources','showmasters',
-  'sightline productions','simple science','soul purpose','soundorama',
+  'sightline','simple science','soul purpose','soundorama',
   'spygoat','talent crewing','tbaal','tcg','ten eighty media','tse','[blocked]',
 ];
 
@@ -104,7 +104,7 @@ export async function fetchAvailability(days: number = 60): Promise<DayAvailabil
       timeMax: end.toISOString(),
       singleEvents: true,
       orderBy: 'startTime',
-      maxResults: 500,
+      maxResults: 2500,
       timeZone: TIMEZONE,
     });
     const events = response.data.items || [];
