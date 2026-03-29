@@ -6,10 +6,9 @@ import { logger } from '../lib/logger';
 
 export const calendarRouter = Router();
 
-// GET /api/calendar/availability?days=60
 calendarRouter.get('/availability', generalRateLimit, async (req: Request, res: Response) => {
   try {
-    const days = Math.min(parseInt(req.query.days as string || '90'), 365);
+    const days = Math.min(parseInt(req.query.days as string || '60'), 180);
     const availability = await fetchAvailability(days);
     res.json({ success: true, data: availability, count: availability.length });
   } catch (error) {
@@ -21,14 +20,12 @@ calendarRouter.get('/availability', generalRateLimit, async (req: Request, res: 
   }
 });
 
-// POST /api/calendar/refresh (admin only - force refresh cache)
 calendarRouter.post('/refresh', requireAdminSecret, async (_req: Request, res: Response) => {
   try {
     invalidateCache();
-    const availability = await fetchAvailability(90);
+    const availability = await fetchAvailability(180);
     res.json({ success: true, message: 'Cache refreshed', count: availability.length });
   } catch (error) {
     res.status(503).json({ success: false, error: 'Failed to refresh' });
   }
 });
-
