@@ -1,8 +1,19 @@
 'use client';
+import { useState } from 'react';
+
 interface HeaderProps {
   onLogoClick: () => void;
 }
+
 export default function Header({ onLogoClick }: HeaderProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <header
       style={{
@@ -57,7 +68,26 @@ export default function Header({ onLogoClick }: HeaderProps) {
             </div>
           </div>
         </button>
+
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleCopyLink}
+            style={{
+              background: copied ? 'rgba(74,222,128,0.15)' : 'rgba(212,175,55,0.1)',
+              border: copied ? '1px solid rgba(74,222,128,0.4)' : '1px solid rgba(212,175,55,0.3)',
+              color: copied ? '#4ade80' : '#d4af37',
+              borderRadius: 20,
+              padding: '6px 14px',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              letterSpacing: '0.5px',
+            }}
+          >
+            {copied ? '✓ Copied!' : '🔗 Copy Link'}
+          </button>
+
           <div
             className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs"
             style={{
