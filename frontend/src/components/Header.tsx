@@ -1,9 +1,7 @@
 'use client';
-
 interface HeaderProps {
   onLogoClick: () => void;
 }
-
 export default function Header({ onLogoClick }: HeaderProps) {
   return (
     <header
@@ -17,7 +15,6 @@ export default function Header({ onLogoClick }: HeaderProps) {
       }}
     >
       <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-        {/* Logo / Brand */}
         <button
           onClick={onLogoClick}
           className="flex items-center gap-3 group"
@@ -38,7 +35,7 @@ export default function Header({ onLogoClick }: HeaderProps) {
               flexShrink: 0,
             }}
           >
-            LM
+            DM
           </div>
           <div className="text-left">
             <div
@@ -53,15 +50,13 @@ export default function Header({ onLogoClick }: HeaderProps) {
                 lineHeight: 1.2,
               }}
             >
-              Lissie Marion
+              Derrick Mackey
             </div>
             <div style={{ fontSize: 11, color: '#a0a8c0', letterSpacing: '1.5px', textTransform: 'uppercase' }}>
-              Show Productions
+              Audio Engineer · Lissie Marion Show Productions
             </div>
           </div>
         </button>
-
-        {/* Right side */}
         <div className="flex items-center gap-3">
           <div
             className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs"
@@ -85,7 +80,6 @@ export default function Header({ onLogoClick }: HeaderProps) {
           </div>
         </div>
       </div>
-
       <style jsx>{`
         @keyframes pulse {
           0%, 100% { opacity: 1; }
