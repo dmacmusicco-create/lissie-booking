@@ -1,5 +1,5 @@
 'use client';
-import { useMemo, useState, useRef, useEffect, useCallback } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { DayAvailability } from '@/lib/api';
 import DayCard from './DayCard';
 
@@ -29,50 +29,15 @@ function groupByMonth(days: DayAvailability[]): MonthGroup[] {
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-function isMobile() {
-  return typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
-}
-
 export default function CalendarGrid({ availability, loading, onDayClick, onRangeSelect }: CalendarGridProps) {
   const months = useMemo(() => groupByMonth(availability), [availability]);
   const today = new Date().toISOString().split('T')[0];
-  const [dragStart, setDragStart] = useState<string | null>(null);
-  const [dragEnd, setDragEnd] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [mobileSelected, setMobileSelected] = useState<string[]>([]);
-  const [mobile, setMobile] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setMobile(isMobile());
-  }, []);
-
-  const desktopSelectedDates = useMemo(() => {
-    if (!dragStart || !dragEnd) return [];
-    const start = dragStart < dragEnd ? dragStart : dragEnd;
-    const end = dragStart < dragEnd ? dragEnd : dragStart;
-    return availability
-      .filter(d => d.date >= start && d.date <= end && d.available && d.date >= today)
-      .map(d => d.date);
-  }, [dragStart, dragEnd, availability, today]);
-
-  const finishDrag = useCallback(() => {
-    if (isDragging && desktopSelectedDates.length > 1) {
-      onRangeSelect(desktopSelectedDates);
-    }
-    setIsDragging(false);
-    setDragStart(null);
-    setDragEnd(null);
-  }, [isDragging, desktopSelectedDates, onRangeSelect]);
-
-  useEffect(() => {
-    window.addEventListener('mouseup', finishDrag);
-    return () => window.removeEventListener('mouseup', finishDrag);
-  }, [finishDrag]);
-
-  const handleMobileTap = (date: string, available: boolean) => {
+  const handleDayTap = (date: string, available: boolean) => {
     if (!available || date < today) return;
-    setMobileSelected(prev => {
+    setSelected(prev => {
       if (prev.includes(date)) {
         return prev.filter(d => d !== date);
       }
@@ -80,18 +45,16 @@ export default function CalendarGrid({ availability, loading, onDayClick, onRang
     });
   };
 
-  const handleMobileRequest = () => {
-    if (mobileSelected.length === 1) {
-      onDayClick(mobileSelected[0], true);
-    } else if (mobileSelected.length > 1) {
-      onRangeSelect(mobileSelected.sort());
+  const handleRequest = () => {
+    if (selected.length === 1) {
+      onDayClick(selected[0], true);
+    } else if (selected.length > 1) {
+      onRangeSelect(selected.sort());
     }
-    setMobileSelected([]);
+    setSelected([]);
   };
 
-  const clearMobileSelection = () => setMobileSelected([]);
-
-  const selectedDates = mobile ? mobileSelected : desktopSelectedDates;
+  const clearSelection = () => setSelected([]);
 
   if (loading) {
     return (
@@ -113,9 +76,7 @@ export default function CalendarGrid({ availability, loading, onDayClick, onRang
   return (
     <div ref={containerRef} className="space-y-10" style={{ userSelect: 'none' }}>
       <div style={{ textAlign: 'center', fontSize: 12, color: '#6b7280', marginBottom: -24 }}>
-        {mobile
-          ? '💡 Tap days to select them, then tap Request'
-          : '💡 Click a single day or drag to select multiple days'}
+        💡 Tap or click days to select them, then tap <strong>Request</strong>
       </div>
 
       {months.map(({ label, days }) => {
@@ -146,26 +107,8 @@ export default function CalendarGrid({ availability, loading, onDayClick, onRang
                   day={day}
                   isToday={day.date === today}
                   isPast={day.date < today}
-                  isSelected={selectedDates.includes(day.date)}
-                  onMouseDown={() => {
-                    if (!mobile && day.available && day.date >= today) {
-                      setDragStart(day.date);
-                      setDragEnd(day.date);
-                      setIsDragging(true);
-                    }
-                  }}
-                  onMouseEnter={() => {
-                    if (!mobile && isDragging && day.available && day.date >= today) {
-                      setDragEnd(day.date);
-                    }
-                  }}
-                  onClick={() => {
-                    if (mobile) {
-                      handleMobileTap(day.date, day.available);
-                    } else if (!isDragging) {
-                      onDayClick(day.date, day.available);
-                    }
-                  }}
+                  isSelected={selected.includes(day.date)}
+                  onClick={() => handleDayTap(day.date, day.available)}
                   style={{ animationDelay: `${(idx % 30) * 15}ms` }}
                 />
               ))}
@@ -174,7 +117,7 @@ export default function CalendarGrid({ availability, loading, onDayClick, onRang
         );
       })}
 
-      {mobile && mobileSelected.length > 0 && (
+      {selected.length > 0 && (
         <div
           style={{
             position: 'fixed',
@@ -188,7 +131,7 @@ export default function CalendarGrid({ availability, loading, onDayClick, onRang
           }}
         >
           <button
-            onClick={clearMobileSelection}
+            onClick={clearSelection}
             style={{
               padding: '12px 20px',
               borderRadius: 20,
@@ -203,7 +146,7 @@ export default function CalendarGrid({ availability, loading, onDayClick, onRang
             Clear
           </button>
           <button
-            onClick={handleMobileRequest}
+            onClick={handleRequest}
             style={{
               padding: '14px 28px',
               borderRadius: 20,
@@ -216,7 +159,7 @@ export default function CalendarGrid({ availability, loading, onDayClick, onRang
               boxShadow: '0 4px 20px rgba(212,175,55,0.4)',
             }}
           >
-            Request {mobileSelected.length} Day{mobileSelected.length > 1 ? 's' : ''} →
+            Request {selected.length} Day{selected.length > 1 ? 's' : ''} →
           </button>
         </div>
       )}
