@@ -71,7 +71,10 @@ export default function HomePage() {
 
   const handleLogoClick = () => {
     setLogoClicks(n => {
-      if (n + 1 >= 5) { setShowAdmin(true); return 0; }
+      if (n + 1 >= 5) {
+        setShowAdmin(true);
+        return 0;
+      }
       return n + 1;
     });
   };
@@ -81,7 +84,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%)' }}>
       <Header onLogoClick={handleLogoClick} />
-
       <main className="max-w-6xl mx-auto px-4 py-8 pb-20">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -92,7 +94,6 @@ export default function HomePage() {
               Showing next {daysToShow} days · Updates every 2 minutes
             </p>
           </div>
-
           <div className="flex items-center gap-3">
             {lastUpdated && (
               <span className="text-xs hidden sm:block" style={{ color: '#6b7280' }}>
@@ -115,9 +116,7 @@ export default function HomePage() {
             </button>
           </div>
         </div>
-
         <Legend />
-
         {error ? (
           <div className="text-center py-20">
             <p className="text-red-400 mb-4">{error}</p>
@@ -138,7 +137,6 @@ export default function HomePage() {
               onRangeSelect={handleRangeSelect}
               daysToShow={daysToShow}
             />
-
             <div className="flex justify-center gap-4 mt-10">
               {daysToShow > 60 && (
                 <button
@@ -155,4 +153,30 @@ export default function HomePage() {
                 style={{
                   background: 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(240,192,64,0.1))',
                   color: '#d4af37',
-                  bo
+                  border: '1px solid rgba(212,175,55,0.4)',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'linear-gradient(135deg, rgba(212,175,55,0.3), rgba(240,192,64,0.2))')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'linear-gradient(135deg, rgba(212,175,55,0.2), rgba(240,192,64,0.1))')}
+              >
+                Show More Dates →
+              </button>
+            </div>
+          </>
+        )}
+      </main>
+      {showModal && (
+        <BookingModal
+          date={selectedDate || selectedDates[0]}
+          dates={selectedDates.length > 1 ? selectedDates : undefined}
+          onClose={() => {
+            setSelectedDate(null);
+            setSelectedDates([]);
+          }}
+        />
+      )}
+      {showAdmin && (
+        <AdminPanel onClose={() => setShowAdmin(false)} />
+      )}
+    </div>
+  );
+}
