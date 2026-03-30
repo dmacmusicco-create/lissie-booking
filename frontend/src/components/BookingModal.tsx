@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { X, Calendar, User, Mail, Phone, FileText, Loader2 } catch from 'lucide-react';
+import { X, Calendar, User, Mail, Phone, FileText, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { submitBookingRequest } from '@/lib/api';
 
