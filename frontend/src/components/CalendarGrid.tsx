@@ -29,15 +29,25 @@ function groupByMonth(days: DayAvailability[]): MonthGroup[] {
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+function isMobile() {
+  return typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+}
+
 export default function CalendarGrid({ availability, loading, onDayClick, onRangeSelect }: CalendarGridProps) {
   const months = useMemo(() => groupByMonth(availability), [availability]);
   const today = new Date().toISOString().split('T')[0];
   const [dragStart, setDragStart] = useState<string | null>(null);
   const [dragEnd, setDragEnd] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [mobileSelected, setMobileSelected] = useState<string[]>([]);
+  const [mobile, setMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const selectedDates = useMemo(() => {
+  useEffect(() => {
+    setMobile(isMobile());
+  }, []);
+
+  const desktopSelectedDates = useMemo(() => {
     if (!dragStart || !dragEnd) return [];
     const start = dragStart < dragEnd ? dragStart : dragEnd;
     const end = dragStart < dragEnd ? dragEnd : dragStart;
@@ -47,40 +57,41 @@ export default function CalendarGrid({ availability, loading, onDayClick, onRang
   }, [dragStart, dragEnd, availability, today]);
 
   const finishDrag = useCallback(() => {
-    if (isDragging && selectedDates.length > 1) {
-      onRangeSelect(selectedDates);
+    if (isDragging && desktopSelectedDates.length > 1) {
+      onRangeSelect(desktopSelectedDates);
     }
     setIsDragging(false);
     setDragStart(null);
     setDragEnd(null);
-  }, [isDragging, selectedDates, onRangeSelect]);
+  }, [isDragging, desktopSelectedDates, onRangeSelect]);
 
   useEffect(() => {
     window.addEventListener('mouseup', finishDrag);
-    window.addEventListener('touchend', finishDrag);
-    return () => {
-      window.removeEventListener('mouseup', finishDrag);
-      window.removeEventListener('touchend', finishDrag);
-    };
+    return () => window.removeEventListener('mouseup', finishDrag);
   }, [finishDrag]);
 
-  // Handle touch move — find which day card the finger is over
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isDragging) return;
-    e.preventDefault();
-    const touch = e.touches[0];
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    if (el) {
-      const card = el.closest('[data-date]') as HTMLElement;
-      if (card && card.dataset.date) {
-        const date = card.dataset.date;
-        const day = availability.find(d => d.date === date);
-        if (day && day.available && date >= today) {
-          setDragEnd(date);
-        }
+  const handleMobileTap = (date: string, available: boolean) => {
+    if (!available || date < today) return;
+    setMobileSelected(prev => {
+      if (prev.includes(date)) {
+        return prev.filter(d => d !== date);
       }
+      return [...prev, date];
+    });
+  };
+
+  const handleMobileRequest = () => {
+    if (mobileSelected.length === 1) {
+      onDayClick(mobileSelected[0], true);
+    } else if (mobileSelected.length > 1) {
+      onRangeSelect(mobileSelected.sort());
     }
-  }, [isDragging, availability, today]);
+    setMobileSelected([]);
+  };
+
+  const clearMobileSelection = () => setMobileSelected([]);
+
+  const selectedDates = mobile ? mobileSelected : desktopSelectedDates;
 
   if (loading) {
     return (
@@ -100,14 +111,11 @@ export default function CalendarGrid({ availability, loading, onDayClick, onRang
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="space-y-10"
-      style={{ userSelect: 'none', touchAction: isDragging ? 'none' : 'auto' }}
-      onTouchMove={handleTouchMove}
-    >
+    <div ref={containerRef} className="space-y-10" style={{ userSelect: 'none' }}>
       <div style={{ textAlign: 'center', fontSize: 12, color: '#6b7280', marginBottom: -24 }}>
-        💡 Click a single day or <strong>tap and drag</strong> to select multiple days
+        {mobile
+          ? '💡 Tap days to select them, then tap Request'
+          : '💡 Click a single day or drag to select multiple days'}
       </div>
 
       {months.map(({ label, days }) => {
@@ -139,28 +147,22 @@ export default function CalendarGrid({ availability, loading, onDayClick, onRang
                   isToday={day.date === today}
                   isPast={day.date < today}
                   isSelected={selectedDates.includes(day.date)}
-                  data-date={day.date}
                   onMouseDown={() => {
-                    if (day.available && day.date >= today) {
+                    if (!mobile && day.available && day.date >= today) {
                       setDragStart(day.date);
                       setDragEnd(day.date);
                       setIsDragging(true);
                     }
                   }}
                   onMouseEnter={() => {
-                    if (isDragging && day.available && day.date >= today) {
+                    if (!mobile && isDragging && day.available && day.date >= today) {
                       setDragEnd(day.date);
-                    }
-                  }}
-                  onTouchStart={() => {
-                    if (day.available && day.date >= today) {
-                      setDragStart(day.date);
-                      setDragEnd(day.date);
-                      setIsDragging(true);
                     }
                   }}
                   onClick={() => {
-                    if (!isDragging) {
+                    if (mobile) {
+                      handleMobileTap(day.date, day.available);
+                    } else if (!isDragging) {
                       onDayClick(day.date, day.available);
                     }
                   }}
@@ -171,6 +173,53 @@ export default function CalendarGrid({ availability, loading, onDayClick, onRang
           </div>
         );
       })}
+
+      {mobile && mobileSelected.length > 0 && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 24,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 40,
+            display: 'flex',
+            gap: 12,
+            alignItems: 'center',
+          }}
+        >
+          <button
+            onClick={clearMobileSelection}
+            style={{
+              padding: '12px 20px',
+              borderRadius: 20,
+              background: 'rgba(255,255,255,0.1)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              color: '#a0a8c0',
+              fontWeight: 600,
+              fontSize: 14,
+              cursor: 'pointer',
+            }}
+          >
+            Clear
+          </button>
+          <button
+            onClick={handleMobileRequest}
+            style={{
+              padding: '14px 28px',
+              borderRadius: 20,
+              background: 'linear-gradient(135deg, #d4af37, #f0c040)',
+              border: 'none',
+              color: '#1a1a2e',
+              fontWeight: 700,
+              fontSize: 15,
+              cursor: 'pointer',
+              boxShadow: '0 4px 20px rgba(212,175,55,0.4)',
+            }}
+          >
+            Request {mobileSelected.length} Day{mobileSelected.length > 1 ? 's' : ''} →
+          </button>
+        </div>
+      )}
     </div>
   );
 }
