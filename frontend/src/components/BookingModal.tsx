@@ -11,19 +11,14 @@ interface BookingModalProps {
 
 function formatDisplayDate(dateStr: string): string {
   return new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 }
 
 function formatDateRange(dates: string[]): string {
   if (dates.length === 1) return formatDisplayDate(dates[0]);
   const sorted = [...dates].sort();
-  const first = formatDisplayDate(sorted[0]);
-  const last = formatDisplayDate(sorted[sorted.length - 1]);
-  return first + ' to ' + last + ' (' + dates.length + ' days)';
+  return formatDisplayDate(sorted[0]) + ' to ' + formatDisplayDate(sorted[sorted.length - 1]) + ' (' + dates.length + ' days)';
 }
 
 export default function BookingModal({ date, dates, onClose }: BookingModalProps) {
@@ -39,9 +34,7 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
@@ -52,28 +45,15 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
   }, []);
 
   const handleSubmit = async () => {
-    if (!name.trim() || !email.trim() || !notes.trim()) {
-      setErrorMsg('Please fill in all required fields.');
-      return;
-    }
-    if (!/\S+@\S+\.\S+/.test(email)) {
-      setErrorMsg('Please enter a valid email address.');
-      return;
-    }
-    if (notes.trim().length < 10) {
-      setErrorMsg('Please provide more detail in the notes field.');
-      return;
-    }
+    if (!name.trim() || !email.trim() || !notes.trim()) { setErrorMsg('Please fill in all required fields.'); return; }
+    if (!/\S+@\S+\.\S+/.test(email)) { setErrorMsg('Please enter a valid email address.'); return; }
+    if (notes.trim().length < 10) { setErrorMsg('Please provide more detail in the notes field.'); return; }
     setErrorMsg('');
     setLoading(true);
     try {
       await submitBookingRequest({
-        name: name.trim(),
-        email: email.trim(),
-        phone: phone.trim() || undefined,
-        eventDate: selectedDates.sort().join(', '),
-        notes: notes.trim(),
-        website: website,
+        name: name.trim(), email: email.trim(), phone: phone.trim() || undefined,
+        eventDate: selectedDates.sort().join(', '), notes: notes.trim(), website,
       });
       setSubmitted(true);
     } catch (err: any) {
@@ -83,98 +63,80 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
     }
   };
 
-  const inputStyle = {
-    width: '100%',
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.12)',
-    borderRadius: 12,
-    padding: '12px 16px',
-    color: '#f5f0e8',
-    fontSize: 14,
-    outline: 'none',
-  };
+  const iStyle = { width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '12px 16px', color: '#f5f0e8', fontSize: 14, outline: 'none' };
+  const lStyle = { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#a0a8c0', letterSpacing: '0.5px', textTransform: 'uppercase' as const, marginBottom: 8 };
+  const gold = { color: '#d4af37' };
 
-  const labelStyle = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 6,
-    fontSize: 12,
-    color: '#a0a8c0',
-    letterSpacing: '0.5px',
-    textTransform: 'uppercase' as const,
-    marginBottom: 8,
-  };
+  if (submitted) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
+        <div className="w-full max-w-lg rounded-2xl shadow-2xl" style={{ background: 'linear-gradient(180deg, #1e2340 0%, #16213e 100%)', border: '1px solid rgba(212,175,55,0.25)', padding: 40, textAlign: 'center' }}>
+          <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(74,222,128,0.1)', border: '2px solid rgba(74,222,128,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 28 }}>✓</div>
+          <h3 style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: '#4ade80', marginBottom: 12 }}>Request Sent!</h3>
+          <p style={{ color: '#a0a8c0', lineHeight: 1.7, marginBottom: 8 }}>Your request for <strong style={gold}>{formatDateRange(selectedDates)}</strong> has been received.</p>
+          <p style={{ color: '#6b7280', fontSize: 13 }}>We will be in touch at <strong style={{ color: '#a0a8c0' }}>{email}</strong> shortly. This is not a confirmation.</p>
+          <button onClick={onClose} style={{ marginTop: 32, padding: '12px 32px', borderRadius: 12, background: 'linear-gradient(135deg, #d4af37, #f0c040)', color: '#1a1a2e', fontWeight: 700, border: 'none', cursor: 'pointer' }}>Close</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.75)' }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div
-        ref={modalRef}
-        className="w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl"
-        style={{
-          background: 'linear-gradient(180deg, #1e2340 0%, #16213e 100%)',
-          border: '1px solid rgba(212,175,55,0.25)',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-        }}
-      >
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #1a1a2e, #16213e)',
-            borderBottom: '1px solid rgba(212,175,55,0.2)',
-            padding: '24px 28px 20px',
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-          }}
-        >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div ref={modalRef} className="w-full max-w-lg rounded-2xl overflow-hidden shadow-2xl" style={{ background: 'linear-gradient(180deg, #1e2340 0%, #16213e 100%)', border: '1px solid rgba(212,175,55,0.25)', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ background: 'linear-gradient(135deg, #1a1a2e, #16213e)', borderBottom: '1px solid rgba(212,175,55,0.2)', padding: '24px 28px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div>
-            <h2
-              style={{
-                fontFamily: 'Georgia, serif',
-                fontSize: 20,
-                fontWeight: 700,
-                background: 'linear-gradient(135deg, #d4af37, #f0c040)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                marginBottom: 6,
-              }}
-            >
+            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, background: 'linear-gradient(135deg, #d4af37, #f0c040)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', marginBottom: 6 }}>
               {selectedDates.length > 1 ? 'Request ' + selectedDates.length + ' Days' : 'Request Booking'}
             </h2>
             <div style={{ color: '#86efac', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Calendar size={13} />
-              {formatDateRange(selectedDates)}
+              <Calendar size={13} />{formatDateRange(selectedDates)}
             </div>
           </div>
-          <button
-            onClick={onClose}
-            style={{ color: '#6b7280', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 12, padding: 8, cursor: 'pointer' }}
-          >
-            <X size={20} />
-          </button>
+          <button onClick={onClose} style={{ color: '#6b7280', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 12, padding: 8, cursor: 'pointer' }}><X size={20} /></button>
         </div>
 
-        {submitted ? (
-          <div style={{ padding: 40, textAlign: 'center' }}>
-            <div
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: '50%',
-                background: 'rgba(74,222,128,0.1)',
-                border: '2px solid rgba(74,222,128,0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 20px',
-                fontSize: 28,
-              }}
-            >
-              ✓
+        <div style={{ padding: 28 }}>
+          <p style={{ color: '#a0a8c0', fontSize: 13, marginBottom: 24, lineHeight: 1.6 }}>
+            {selectedDates.length > 1 ? 'You have selected ' + selectedDates.length + ' days. Fill out the form below.' : 'Fill out the form below. This does not confirm the date.'}
+          </p>
+
+          <div style={{ position: 'absolute', left: '-9999px', opacity: 0 }}>
+            <input tabIndex={-1} autoComplete="off" value={website} onChange={e => setWebsite(e.target.value)} />
+          </div>
+
+          {errorMsg && <div style={{ color: '#f87171', fontSize: 13, marginBottom: 16, padding: '10px 14px', background: 'rgba(248,113,113,0.1)', borderRadius: 8 }}>{errorMsg}</div>}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <label style={lStyle}><span style={gold}><User size={15} /></span>Full Name *</label>
+              <input type="text" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} style={iStyle} />
             </div>
-            <h3 sty
+            <div>
+              <label style={lStyle}><span style={gold}><Mail size={15} /></span>Email Address *</label>
+              <input type="email" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} style={iStyle} />
+            </div>
+            <div>
+              <label style={lStyle}><span style={gold}><Phone size={15} /></span>Phone Number (optional)</label>
+              <input type="tel" placeholder="+1 (555) 000-0000" value={phone} onChange={e => setPhone(e.target.value)} style={iStyle} />
+            </div>
+            <div>
+              <label style={lStyle}><span style={gold}><Calendar size={15} /></span>{selectedDates.length > 1 ? 'Selected Dates (' + selectedDates.length + ')' : 'Event Date'}</label>
+              <input type="text" value={formatDateRange(selectedDates)} disabled style={{ ...iStyle, background: 'rgba(255,255,255,0.03)', color: '#6b7280', cursor: 'not-allowed' }} />
+            </div>
+            <div>
+              <label style={lStyle}><span style={gold}><FileText size={15} /></span>Event Details / Notes *</label>
+              <textarea placeholder="Tell us about your event..." value={notes} onChange={e => setNotes(e.target.value)} rows={5} style={{ ...iStyle, resize: 'vertical', lineHeight: 1.6 }} />
+              <div style={{ textAlign: 'right', fontSize: 11, color: '#6b7280', marginTop: 4 }}>{notes.length} / 2000</div>
+            </div>
+          </div>
+
+          <button onClick={handleSubmit} disabled={loading} style={{ width: '100%', marginTop: 24, padding: 16, borderRadius: 12, background: loading ? 'rgba(212,175,55,0.3)' : 'linear-gradient(135deg, #d4af37, #f0c040)', color: '#1a1a2e', fontWeight: 700, fontSize: 15, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            {loading ? <><Loader2 size={16} />Sending...</> : 'Send Booking Request' + (selectedDates.length > 1 ? ' for ' + selectedDates.length + ' Days' : '') + ' →'}
+          </button>
+          <p style={{ textAlign: 'center', fontSize: 11, color: '#4b5563', marginTop: 12 }}>Your date is not reserved until confirmed by our team.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
