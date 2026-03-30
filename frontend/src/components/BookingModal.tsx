@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { X, Calendar, User, Mail, Phone, FileText, Loader2 } from 'lucide-react';
+import { X, Calendar, User, Mail, Phone, FileText, Loader2 } catch from 'lucide-react';
 import toast from 'react-hot-toast';
 import { submitBookingRequest } from '@/lib/api';
 
 interface BookingModalProps {
   date: string;
+  dates?: string[];
   onClose: () => void;
 }
 
@@ -19,20 +20,27 @@ function formatDisplayDate(dateStr: string): string {
   });
 }
 
-export default function BookingModal({ date, onClose }: BookingModalProps) {
+function formatDateRange(dates: string[]): string {
+  if (dates.length === 1) return formatDisplayDate(dates[0]);
+  const sorted = [...dates].sort();
+  const first = formatDisplayDate(sorted[0]);
+  const last = formatDisplayDate(sorted[sorted.length - 1]);
+  return `${first} — ${last} (${dates.length} days)`;
+}
+
+export default function BookingModal({ date, dates, onClose }: BookingModalProps) {
+  const selectedDates = dates && dates.length > 0 ? dates : [date];
   const [form, setForm] = useState({ name: '', email: '', phone: '', notes: '', website: '' });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
 
-  // Close on ESC
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  // Prevent body scroll
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = ''; };
@@ -58,9 +66,9 @@ export default function BookingModal({ date, onClose }: BookingModalProps) {
         name: form.name.trim(),
         email: form.email.trim(),
         phone: form.phone.trim() || undefined,
-        eventDate: date,
+        eventDate: selectedDates.sort().join(', '),
         notes: form.notes.trim(),
-        website: form.website, // honeypot
+        website: form.website,
       });
       setSubmitted(true);
     } catch (err: any) {
@@ -110,11 +118,11 @@ export default function BookingModal({ date, onClose }: BookingModalProps) {
                 marginBottom: 6,
               }}
             >
-              Request Booking
+              {selectedDates.length > 1 ? `Request ${selectedDates.length} Days` : 'Request Booking'}
             </h2>
             <div className="flex items-center gap-2" style={{ color: '#86efac', fontSize: 13 }}>
               <Calendar size={13} />
-              {formatDisplayDate(date)}
+              {formatDateRange(selectedDates)}
             </div>
           </div>
           <button
@@ -129,7 +137,6 @@ export default function BookingModal({ date, onClose }: BookingModalProps) {
         </div>
 
         {submitted ? (
-          /* Success state */
           <div className="p-10 text-center">
             <div
               style={{
@@ -147,37 +154,32 @@ export default function BookingModal({ date, onClose }: BookingModalProps) {
             >
               ✓
             </div>
-            <h3
-              style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: '#4ade80', marginBottom: 12 }}
-            >
+            <h3 style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: '#4ade80', marginBottom: 12 }}>
               Request Sent!
             </h3>
             <p style={{ color: '#a0a8c0', lineHeight: 1.7, marginBottom: 8 }}>
-              Your request for <strong style={{ color: '#d4af37' }}>{formatDisplayDate(date)}</strong> has been received.
+              Your request for <strong style={{ color: '#d4af37' }}>{formatDateRange(selectedDates)}</strong> has been received.
             </p>
             <p style={{ color: '#6b7280', fontSize: 13, lineHeight: 1.6 }}>
-              We'll review your request and be in touch at <strong style={{ color: '#a0a8c0' }}>{form.email}</strong> shortly.
+              We'll be in touch at <strong style={{ color: '#a0a8c0' }}>{form.email}</strong> shortly.
               Please note this is not a confirmation.
             </p>
             <button
               onClick={onClose}
               className="mt-8 px-8 py-3 rounded-xl font-semibold text-sm transition-all"
-              style={{
-                background: 'linear-gradient(135deg, #d4af37, #f0c040)',
-                color: '#1a1a2e',
-              }}
+              style={{ background: 'linear-gradient(135deg, #d4af37, #f0c040)', color: '#1a1a2e' }}
             >
               Close
             </button>
           </div>
         ) : (
-          /* Form */
           <div style={{ padding: '28px' }}>
             <p style={{ color: '#a0a8c0', fontSize: 13, marginBottom: 24, lineHeight: 1.6 }}>
-              Fill out the form below and our team will review your request and follow up. This does <em>not</em> confirm the date.
+              {selectedDates.length > 1
+                ? `You've selected ${selectedDates.length} days. Fill out the form below and we'll review your request.`
+                : "Fill out the form below and our team will review your request. This does not confirm the date."}
             </p>
 
-            {/* Honeypot - hidden from humans */}
             <div style={{ position: 'absolute', left: '-9999px', opacity: 0 }}>
               <input
                 tabIndex={-1}
@@ -213,12 +215,11 @@ export default function BookingModal({ date, onClose }: BookingModalProps) {
               />
               <Field
                 icon={<Calendar size={15} />}
-                label="Event Date"
-                value={formatDisplayDate(date)}
+                label={selectedDates.length > 1 ? `Selected Dates (${selectedDates.length})` : 'Event Date'}
+                value={formatDateRange(selectedDates)}
                 disabled
               />
 
-              {/* Notes textarea */}
               <div>
                 <label
                   style={{
@@ -263,31 +264,24 @@ export default function BookingModal({ date, onClose }: BookingModalProps) {
               </div>
             </div>
 
-            {/* Submit */}
             <button
               onClick={handleSubmit}
               disabled={loading}
               className="w-full mt-6 py-4 rounded-xl font-bold text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2"
               style={{
-                background: loading
-                  ? 'rgba(212,175,55,0.3)'
-                  : 'linear-gradient(135deg, #d4af37, #f0c040)',
+                background: loading ? 'rgba(212,175,55,0.3)' : 'linear-gradient(135deg, #d4af37, #f0c040)',
                 color: '#1a1a2e',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 fontSize: 15,
                 letterSpacing: '0.5px',
               }}
-              onMouseEnter={e => {
-                if (!loading) e.currentTarget.style.filter = 'brightness(1.1)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.filter = '';
-              }}
+              onMouseEnter={e => { if (!loading) e.currentTarget.style.filter = 'brightness(1.1)'; }}
+              onMouseLeave={e => { e.currentTarget.style.filter = ''; }}
             >
               {loading ? (
                 <><Loader2 size={16} className="animate-spin" /> Sending Request...</>
               ) : (
-                'Send Booking Request →'
+                `Send Booking Request${selectedDates.length > 1 ? ` for ${selectedDates.length} Days` : ''} →`
               )}
             </button>
 
@@ -301,7 +295,6 @@ export default function BookingModal({ date, onClose }: BookingModalProps) {
   );
 }
 
-// ─── Reusable form field ─────────────────────────────────────────────────────
 function Field({
   icon, label, placeholder, value, onChange, type = 'text', disabled = false,
 }: {
@@ -322,36 +315,4 @@ function Field({
           gap: 6,
           fontSize: 12,
           color: '#a0a8c0',
-          letterSpacing: '0.5px',
-          textTransform: 'uppercase',
-          marginBottom: 8,
-        }}
-      >
-        <span style={{ color: '#d4af37' }}>{icon}</span>
-        {label}
-      </label>
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={e => onChange?.(e.target.value)}
-        disabled={disabled}
-        style={{
-          width: '100%',
-          background: disabled ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          borderRadius: 12,
-          padding: '12px 16px',
-          color: disabled ? '#6b7280' : '#f5f0e8',
-          fontSize: 14,
-          fontFamily: 'Georgia, serif',
-          outline: 'none',
-          transition: 'border-color 0.15s',
-          cursor: disabled ? 'not-allowed' : 'text',
-        }}
-        onFocus={e => { if (!disabled) e.target.style.borderColor = 'rgba(212,175,55,0.5)'; }}
-        onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.12)'; }}
-      />
-    </div>
-  );
-}
+          letterSpacing:
