@@ -9,7 +9,7 @@ export default function Header({ onLogoClick }: HeaderProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+    navigator.clipboard.writeText('https://booking.derrickmackey.com');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
