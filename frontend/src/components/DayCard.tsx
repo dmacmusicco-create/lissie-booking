@@ -1,5 +1,4 @@
 'use client';
-
 import { CSSProperties } from 'react';
 import { DayAvailability } from '@/lib/api';
 
@@ -8,10 +7,13 @@ interface DayCardProps {
   isToday: boolean;
   isPast: boolean;
   onClick: () => void;
+  onMouseDown?: () => void;
+  onMouseEnter?: () => void;
+  isSelected?: boolean;
   style?: CSSProperties;
 }
 
-export default function DayCard({ day, isToday, isPast, onClick, style }: DayCardProps) {
+export default function DayCard({ day, isToday, isPast, onClick, onMouseDown, onMouseEnter, isSelected, style }: DayCardProps) {
   const dayNum = new Date(day.date + 'T12:00:00').getDate();
 
   const getCardStyle = (): CSSProperties => {
@@ -21,6 +23,14 @@ export default function DayCard({ day, isToday, isPast, onClick, style }: DayCar
         border: '1px solid rgba(255,255,255,0.06)',
         cursor: 'default',
         opacity: 0.5,
+      };
+    }
+    if (isSelected && day.available) {
+      return {
+        background: 'linear-gradient(135deg, rgba(212,175,55,0.6), rgba(240,192,64,0.4))',
+        border: '2px solid rgba(212,175,55,0.8)',
+        cursor: 'pointer',
+        transform: 'scale(1.05)',
       };
     }
     if (!day.available) {
@@ -39,11 +49,12 @@ export default function DayCard({ day, isToday, isPast, onClick, style }: DayCar
 
   const getLabelStyle = (): CSSProperties => {
     if (isPast) return { color: '#6b7280', fontSize: 9 };
+    if (isSelected && day.available) return { color: '#1a1a2e', fontSize: 9, fontWeight: 800 };
     if (!day.available) return { color: '#fca5a5', fontSize: 9 };
     return { color: '#86efac', fontSize: 9 };
   };
 
-  const label = isPast ? '' : day.available ? 'Available' : 'Booked';
+  const label = isPast ? '' : isSelected && day.available ? 'Selected' : day.available ? 'Available' : 'Booked';
 
   return (
     <div
@@ -53,8 +64,11 @@ export default function DayCard({ day, isToday, isPast, onClick, style }: DayCar
         ...style,
         paddingBottom: '90%',
         position: 'relative',
+        userSelect: 'none',
       }}
       onClick={!isPast && day.available ? onClick : undefined}
+      onMouseDown={!isPast && day.available ? onMouseDown : undefined}
+      onMouseEnter={!isPast && day.available ? onMouseEnter : undefined}
     >
       <div
         style={{
@@ -67,7 +81,6 @@ export default function DayCard({ day, isToday, isPast, onClick, style }: DayCar
           justifyContent: 'space-between',
         }}
       >
-        {/* Today ring */}
         {isToday && (
           <div
             style={{
@@ -79,29 +92,23 @@ export default function DayCard({ day, isToday, isPast, onClick, style }: DayCar
             }}
           />
         )}
-
-        {/* Day number */}
         <span
           style={{
             fontSize: 14,
             fontWeight: isToday ? 800 : 600,
-            color: isPast ? '#4b5563' : isToday ? '#d4af37' : day.available ? '#dcfce7' : '#fecaca',
+            color: isPast ? '#4b5563' : isSelected && day.available ? '#1a1a2e' : isToday ? '#d4af37' : day.available ? '#dcfce7' : '#fecaca',
             lineHeight: 1,
           }}
         >
           {dayNum}
         </span>
-
-        {/* Status label */}
         <span
           className="uppercase tracking-wide font-semibold text-center leading-tight"
           style={{ ...getLabelStyle(), letterSpacing: '0.5px' }}
         >
           {label}
         </span>
-
-        {/* Request button on hover (available days only) */}
-        {!isPast && day.available && (
+        {!isPast && day.available && !isSelected && (
           <div
             className="absolute inset-0 flex items-end justify-center pb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
             style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 11 }}
