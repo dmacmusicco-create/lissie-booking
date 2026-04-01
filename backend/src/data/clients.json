@@ -1,57 +1,56 @@
 [
   {"id":"1","name":"Alliant","email":"michele.smith@alliantevents.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"2","name":"Alliant (Accounting)","email":"accounting@alliantevents.com","active":true,"addedAt":"2026-03-29"},
+
   {"id":"3","name":"Audio Visual One","email":"jpolletta@audiovisualone.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"4","name":"AV Leads","email":"accounting@avleads.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"5","name":"AVent Techs","email":"timesheets@aventtechs.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"6","name":"AVTS","email":"avtscontractors@avtsgroup.com","active":true,"addedAt":"2026-03-29"},
+  {"id":"4","name":"AV Leads","email":"todd@avleads.com","active":true,"addedAt":"2026-03-29"},
+  {"id":"5","name":"AVent Techs","email":"tat@aventtechs.com","active":true,"addedAt":"2026-03-29"},
+  {"id":"6","name":"AVTS","email":"jeff.dieterich@avtsgroup.com","active":true,"addedAt":"2026-03-29"},
   {"id":"7","name":"Bytegraph","email":"prashant@bytegraph.com","active":true,"addedAt":"2026-03-29"},
   {"id":"8","name":"Christian House Of Prayer","email":"jbrandonpro@chop.org","active":true,"addedAt":"2026-03-29"},
   {"id":"9","name":"Crewtex","email":"avcrew@crewtex.com","active":true,"addedAt":"2026-03-29"},
   {"id":"10","name":"DHSystems","email":"zach@dhsystems.net","active":true,"addedAt":"2026-03-29"},
-  {"id":"11","name":"Evanta","email":"akimmerling@broniec.com","active":true,"addedAt":"2026-03-29"},
+
   {"id":"12","name":"Funknug","email":"funknugav@gmail.com","active":true,"addedAt":"2026-03-29"},
   {"id":"13","name":"Genesis AV","email":"genesisavcrewing@gmail.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"14","name":"Grit Productions","email":"ap@gritprod.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"15","name":"Imprint Group","email":"contractors@imprintgroup.com","active":true,"addedAt":"2026-03-29"},
+  {"id":"14","name":"Grit Productions","email":"dalton@gritprod.com","active":true,"addedAt":"2026-03-29"},
+
   {"id":"16","name":"Imprint Group (Chad)","email":"chad@imprintgroup.com","active":true,"addedAt":"2026-03-29"},
   {"id":"17","name":"JFDI","email":"info@chadirwin.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"18","name":"LMG Technical Services","email":"invoicelabor@lmg.net","active":true,"addedAt":"2026-03-29"},
-  {"id":"19","name":"Manor Hill Productions","email":"invoices@manor-hill.com","active":true,"addedAt":"2026-03-29"},
+  {"id":"18","name":"LMG Technical Services","email":"katie.geroux@lmg.net","active":true,"addedAt":"2026-03-29"},
+  {"id":"19","name":"Manor Hill Productions","email":"gordonu@manor-hill.com","active":true,"addedAt":"2026-03-29"},
   {"id":"20","name":"Manor Hill Productions (Doug)","email":"dougv@manor-hill.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"21","name":"Mark McCarroll","email":"mark@oneworldhumanrescue.org","active":true,"addedAt":"2026-03-29"},
+
   {"id":"22","name":"Mertz Productions","email":"mmotter@mertzproductions.com","active":true,"addedAt":"2026-03-29"},
   {"id":"23","name":"Murray Media","email":"doug@murraymedia.net","active":true,"addedAt":"2026-03-29"},
   {"id":"24","name":"Panavid (Allen)","email":"rallen@panavid.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"25","name":"Panavid (Freelance)","email":"freelance-invoices@panavid.com","active":true,"addedAt":"2026-03-29"},
+
   {"id":"26","name":"Panavid (Pursell)","email":"dpursell@panavid.com","active":true,"addedAt":"2026-03-29"},
   {"id":"27","name":"PANAVID INC","email":"rloehr@panavid.com","active":true,"addedAt":"2026-03-29"},
   {"id":"28","name":"Parker University","email":"Steve.Paul@parker.edu","active":true,"addedAt":"2026-03-29"},
-  {"id":"29","name":"Pearson Technology","email":"accounting@gopearsontechnology.com","active":true,"addedAt":"2026-03-29"},
+  {"id":"29","name":"Pearson Technology","email":"mdaniels@gopearsontechnology.com","active":true,"addedAt":"2026-03-29"},
   {"id":"30","name":"Perfect Sound","email":"jay@perfectsound.live","active":true,"addedAt":"2026-03-29"},
-  {"id":"31","name":"PMSIAV","email":"alex@pmsiav.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"32","name":"Precision Productions","email":"billing@precisionproductions.us","active":true,"addedAt":"2026-03-29"},
+
+  {"id":"32","name":"Precision Productions","email":"trey@precisionproductions.us","active":true,"addedAt":"2026-03-29"},
   {"id":"33","name":"Rocket Man Media Group","email":"AVSourcing@RocketManMediaGroup.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"34","name":"Select Media Resources","email":"dan@smrcrew.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"35","name":"Sightline Productions","email":"invoices@sightline-productions.com","active":true,"addedAt":"2026-03-29"},
+
+
   {"id":"36","name":"Sightline Productions (Damien)","email":"Damien.Grimm@sightline-productions.com","active":true,"addedAt":"2026-03-29"},
   {"id":"37","name":"Simple Science","email":"ursula.parson@simple.science","active":true,"addedAt":"2026-03-29"},
-  {"id":"38","name":"Soul Purpose (Larry)","email":"larrynupe@verizon.net","active":true,"addedAt":"2026-03-29"},
-  {"id":"39","name":"Soul Purpose (Brandi)","email":"brandi@brandimcdowell.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"40","name":"SoundoramaLLC","email":"sales@soundoramallc.com","active":true,"addedAt":"2026-03-29"},
+  
+ 
   {"id":"41","name":"Spygoat","email":"justin@spygoat.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"42","name":"Talent Crewing","email":"Talentcrewing+invoice@gmail.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"43","name":"TBAAL (Box Office)","email":"boxofficemanager@tbaal.org","active":true,"addedAt":"2026-03-29"},
-  {"id":"44","name":"TBAAL (Executive)","email":"executiveoffice@tbaal.org","active":true,"addedAt":"2026-03-29"},
+  {"id":"42","name":"Talent Crewing","email":"Talentcrewing+bob@gmail.com","active":true,"addedAt":"2026-03-29"},
+
+
   {"id":"45","name":"TBAAL (MTT)","email":"mttjproductions@gmail.com","active":true,"addedAt":"2026-03-29"},
   {"id":"46","name":"TCG","email":"kelsy@tcg.agency","active":true,"addedAt":"2026-03-29"},
-  {"id":"47","name":"Ten Eighty Media","email":"accounting@teneightymedia.com","active":true,"addedAt":"2026-03-29"},
+  {"id":"47","name":"Ten Eighty Media","email":"mb@teneightymedia.com","active":true,"addedAt":"2026-03-29"},
   {"id":"48","name":"TSE Live (Normandin)","email":"mnormandin@tse.live","active":true,"addedAt":"2026-03-29"},
   {"id":"49","name":"TSE Live (Schatz)","email":"Rschatz@tse.live","active":true,"addedAt":"2026-03-29"},
-  {"id":"50","name":"Vital Solutions","email":"invoices@vitalav.com","active":true,"addedAt":"2026-03-29"},
+  {"id":"50","name":"Vital Solutions","email":"nickc@vitalav.com","active":true,"addedAt":"2026-03-29"},
   {"id":"51","name":"WAVE","email":"wavelaborpayroll@bygmail.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"52","name":"Williams Signal Inc","email":"accounting@williamssignal.com","active":true,"addedAt":"2026-03-29"},
+  {"id":"52","name":"Williams Signal Inc","email":"johnny@williamssignal.com","active":true,"addedAt":"2026-03-29"},
   {"id":"53","name":"Zoe Audio/Visual (Jon)","email":"jon.eaton@zoeaudiovisual.com","active":true,"addedAt":"2026-03-29"},
   {"id":"54","name":"Zoe Audio/Visual (Tina)","email":"tina@zoeaudiovisual.com","active":true,"addedAt":"2026-03-29"},
-  {"id":"55","name":"Op Team","email":"OpTeamLabor@OpTeamInc.com","active":true,"addedAt":"2026-03-29"}
+  {"id":"55","name":"Op Team","email":"kristie@OpTeamInc.com","active":true,"addedAt":"2026-03-29"}
 ]
