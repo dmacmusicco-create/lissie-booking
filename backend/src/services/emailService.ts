@@ -27,57 +27,61 @@ function formatSingleDate(dateStr: string): string {
   });
 }
 
-function formatEventDates(eventDate: string): string {
-  const dates = eventDate.split(',').map(d => d.trim()).sort();
+function groupConsecutiveDates(dates: string[]): string[][] {
+  const sorted = [...dates].sort();
+  const groups: string[][] = [];
+  let current: string[] = [sorted[0]];
 
-  if (dates.length === 1) {
-    return formatSingleDate(dates[0]);
-  }
-
-  // Check if dates are consecutive
-  const isConsecutive = dates.every((date, i) => {
-    if (i === 0) return true;
-    const prev = new Date(dates[i - 1] + 'T12:00:00');
-    const curr = new Date(date + 'T12:00:00');
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = new Date(sorted[i - 1] + 'T12:00:00');
+    const curr = new Date(sorted[i] + 'T12:00:00');
     const diff = (curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24);
-    return diff === 1;
-  });
-
-  if (isConsecutive) {
-    // Show as a range: Monday, April 6 through Friday, April 10, 2026
-    const first = formatSingleDate(dates[0]);
-    const last = formatSingleDate(dates[dates.length - 1]);
-    return `${first} through ${last}`;
+    if (diff === 1) {
+      current.push(sorted[i]);
+    } else {
+      groups.push(current);
+      current = [sorted[i]];
+    }
   }
-
-  // Non-consecutive — list each date separately
-  return dates.map(d => formatSingleDate(d)).join(', ');
+  groups.push(current);
+  return groups;
 }
 
-function formatSubjectDates(eventDate: string): string {
-  const dates = eventDate.split(',').map(d => d.trim()).sort();
-  if (dates.length === 1) {
-    return formatSingleDate(dates[0]);
+function formatGroups(groups: string[][]): string {
+  return groups.map(group => {
+    if (group.length === 1) {
+      return formatSingleDate(group[0]);
+    }
+    const first = formatSingleDate(group[0]);
+    const last = formatSingleDate(group[group.length - 1]);
+    return `${first} through ${last}`;
+  }).join(', and ');
+}
+
+function formatSubjectGroups(groups: string[][]): string {
+  if (groups.length === 1 && groups[0].length === 1) {
+    return formatSingleDate(groups[0][0]);
   }
-  const isConsecutive = dates.every((date, i) => {
-    if (i === 0) return true;
-    const prev = new Date(dates[i - 1] + 'T12:00:00');
-    const curr = new Date(date + 'T12:00:00');
-    return (curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24) === 1;
-  });
-  if (isConsecutive) {
-    const first = new Date(dates[0] + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
-    const last = new Date(dates[dates.length - 1] + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  return groups.map(group => {
+    if (group.length === 1) {
+      return new Date(group[0] + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+    const first = new Date(group[0] + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+    const last = new Date(group[group.length - 1] + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     return `${first}–${last}`;
-  }
-  return dates.length + ' dates';
+  }).join(', ');
+}
+
+function getTotalDays(dates: string[]): number {
+  return dates.length;
 }
 
 export async function sendBookingNotification(booking: BookingRequest): Promise<void> {
   const resend = getResend();
-  const formattedDates = formatEventDates(booking.eventDate);
-  const subjectDates = formatSubjectDates(booking.eventDate);
-  const dates = booking.eventDate.split(',').map(d => d.trim()).sort();
+  const dates = booking.eventDate.split(',').map(d => d.trim()).filter(Boolean);
+  const groups = groupConsecutiveDates(dates);
+  const formattedDates = formatGroups(groups);
+  const subjectDates = formatSubjectGroups(groups);
   const isMultiple = dates.length > 1;
 
   await resend.emails.send({
@@ -88,7 +92,7 @@ export async function sendBookingNotification(booking: BookingRequest): Promise<
     html: `
       <h2>New Booking Request</h2>
       <p><strong>${isMultiple ? 'Dates Requested' : 'Date Requested'}:</strong> ${formattedDates}</p>
-      ${isMultiple ? `<p><strong>Number of Days:</strong> ${dates.length}</p>` : ''}
+      ${isMultiple ? `<p><strong>Total Days:</strong> ${getTotalDays(dates)}</p>` : ''}
       <p><strong>Name:</strong> ${booking.name}</p>
       <p><strong>Email:</strong> ${booking.email}</p>
       <p><strong>Phone:</strong> ${booking.phone || 'Not provided'}</p>
@@ -100,9 +104,10 @@ export async function sendBookingNotification(booking: BookingRequest): Promise<
 
 export async function sendClientConfirmation(booking: BookingRequest): Promise<void> {
   const resend = getResend();
-  const formattedDates = formatEventDates(booking.eventDate);
-  const subjectDates = formatSubjectDates(booking.eventDate);
-  const dates = booking.eventDate.split(',').map(d => d.trim()).sort();
+  const dates = booking.eventDate.split(',').map(d => d.trim()).filter(Boolean);
+  const groups = groupConsecutiveDates(dates);
+  const formattedDates = formatGroups(groups);
+  const subjectDates = formatSubjectGroups(groups);
   const isMultiple = dates.length > 1;
 
   await resend.emails.send({
@@ -111,7 +116,7 @@ export async function sendClientConfirmation(booking: BookingRequest): Promise<v
     subject: `Your Booking Request — ${subjectDates}`,
     html: `
       <p>Dear ${booking.name},</p>
-      <p>Thank you for your booking request for <strong>${formattedDates}</strong>${isMultiple ? ` (${dates.length} days)` : ''}.</p>
+      <p>Thank you for your booking request for <strong>${formattedDates}</strong>${isMultiple ? ` (${getTotalDays(dates)} days total)` : ''}.</p>
       <p>We have received your request and will be in touch shortly. This is <strong>not a confirmation</strong>.</p>
       <p>Warm regards,<br>Derrick Mackey<br>Audio Engineer · Lissie Marion Show Productions</p>
     `,
