@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Plus, Trash2, Lock, Send, CalendarOff, RefreshCw, Users } from 'lucide-react';
+import { X, Plus, Trash2, Lock, Send, CalendarOff, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { adminFetch } from '@/lib/api';
 
@@ -166,7 +166,6 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
         </div>
 
         {!authenticated ? (
-          /* Login */
           <div style={{ padding: 40, textAlign: 'center' }}>
             <Lock size={32} style={{ color: '#d4af37', margin: '0 auto 16px' }} />
             <p style={{ color: '#a0a8c0', marginBottom: 24 }}>Enter admin secret to continue</p>
@@ -233,7 +232,6 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
             <div style={{ overflowY: 'auto', padding: 24, flex: 1 }}>
               {tab === 'clients' && (
                 <div>
-                  {/* Add client */}
                   <div
                     style={{
                       background: 'rgba(255,255,255,0.03)',
@@ -279,7 +277,6 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                     </button>
                   </div>
 
-                  {/* Client list */}
                   {loadingClients ? (
                     <p style={{ color: '#6b7280', textAlign: 'center' }}>Loading...</p>
                   ) : (
@@ -386,7 +383,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
               {tab === 'newsletter' && (
                 <div>
                   <p style={{ color: '#a0a8c0', fontSize: 13, lineHeight: 1.7, marginBottom: 24 }}>
-                    The newsletter is automatically sent every 2 weeks to all active clients. You can also trigger a manual send below.
+                    The newsletter is automatically sent on the 1st and 15th of every month at 9:00 AM Central Time to all active clients. You can also trigger a manual send below.
                   </p>
                   <div
                     style={{
@@ -399,7 +396,7 @@ export default function AdminPanel({ onClose }: AdminPanelProps) {
                   >
                     <p style={{ fontSize: 13, color: '#a0a8c0', marginBottom: 4 }}>Schedule</p>
                     <p style={{ color: '#d4af37', fontFamily: 'monospace', fontSize: 14 }}>
-                      {process.env.NEXT_PUBLIC_NEWSLETTER_SCHEDULE || 'Every 2 weeks (Monday 9:00 AM)'}
+                      1st and 15th of every month at 9:00 AM Central Time
                     </p>
                   </div>
                   <button
