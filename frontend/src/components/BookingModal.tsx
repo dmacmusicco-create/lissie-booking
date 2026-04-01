@@ -9,16 +9,38 @@ interface BookingModalProps {
   onClose: () => void;
 }
 
-function formatDisplayDate(dateStr: string): string {
-  return new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', {
+function formatSingleDate(dateStr: string): string {
+  return new Date(dateStr.trim() + 'T12:00:00').toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 }
 
-function formatDateRange(dates: string[]): string {
-  if (dates.length === 1) return formatDisplayDate(dates[0]);
+function groupConsecutiveDates(dates: string[]): string[][] {
   const sorted = [...dates].sort();
-  return formatDisplayDate(sorted[0]) + ' to ' + formatDisplayDate(sorted[sorted.length - 1]) + ' (' + dates.length + ' days)';
+  const groups: string[][] = [];
+  let current: string[] = [sorted[0]];
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = new Date(sorted[i - 1] + 'T12:00:00');
+    const curr = new Date(sorted[i] + 'T12:00:00');
+    const diff = (curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24);
+    if (diff === 1) {
+      current.push(sorted[i]);
+    } else {
+      groups.push(current);
+      current = [sorted[i]];
+    }
+  }
+  groups.push(current);
+  return groups;
+}
+
+function formatDateRange(dates: string[]): string {
+  if (dates.length === 1) return formatSingleDate(dates[0]);
+  const groups = groupConsecutiveDates(dates);
+  return groups.map(group => {
+    if (group.length === 1) return formatSingleDate(group[0]);
+    return formatSingleDate(group[0]) + ' through ' + formatSingleDate(group[group.length - 1]);
+  }).join(', and ');
 }
 
 export default function BookingModal({ date, dates, onClose }: BookingModalProps) {
@@ -67,13 +89,18 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
   const lStyle = { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#a0a8c0', letterSpacing: '0.5px', textTransform: 'uppercase' as const, marginBottom: 8 };
   const gold = { color: '#d4af37' };
 
+  const formattedDates = formatDateRange(selectedDates);
+  const totalDays = selectedDates.length;
+
   if (submitted) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)' }}>
         <div className="w-full max-w-lg rounded-2xl shadow-2xl" style={{ background: 'linear-gradient(180deg, #1e2340 0%, #16213e 100%)', border: '1px solid rgba(212,175,55,0.25)', padding: 40, textAlign: 'center' }}>
           <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(74,222,128,0.1)', border: '2px solid rgba(74,222,128,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 28 }}>✓</div>
           <h3 style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: '#4ade80', marginBottom: 12 }}>Request Sent!</h3>
-          <p style={{ color: '#a0a8c0', lineHeight: 1.7, marginBottom: 8 }}>Your request for <strong style={gold}>{formatDateRange(selectedDates)}</strong> has been received.</p>
+          <p style={{ color: '#a0a8c0', lineHeight: 1.7, marginBottom: 8 }}>
+            Your request for <strong style={gold}>{formattedDates}</strong>{totalDays > 1 ? ` (${totalDays} days)` : ''} has been received.
+          </p>
           <p style={{ color: '#6b7280', fontSize: 13 }}>We will be in touch at <strong style={{ color: '#a0a8c0' }}>{email}</strong> shortly. This is not a confirmation.</p>
           <button onClick={onClose} style={{ marginTop: 32, padding: '12px 32px', borderRadius: 12, background: 'linear-gradient(135deg, #d4af37, #f0c040)', color: '#1a1a2e', fontWeight: 700, border: 'none', cursor: 'pointer' }}>Close</button>
         </div>
@@ -87,10 +114,10 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
         <div style={{ background: 'linear-gradient(135deg, #1a1a2e, #16213e)', borderBottom: '1px solid rgba(212,175,55,0.2)', padding: '24px 28px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div>
             <h2 style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, background: 'linear-gradient(135deg, #d4af37, #f0c040)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', marginBottom: 6 }}>
-              {selectedDates.length > 1 ? 'Request ' + selectedDates.length + ' Days' : 'Request Booking'}
+              {totalDays > 1 ? `Request ${totalDays} Days` : 'Request Booking'}
             </h2>
             <div style={{ color: '#86efac', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Calendar size={13} />{formatDateRange(selectedDates)}
+              <Calendar size={13} />{formattedDates}
             </div>
           </div>
           <button onClick={onClose} style={{ color: '#6b7280', background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 12, padding: 8, cursor: 'pointer' }}><X size={20} /></button>
@@ -98,7 +125,7 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
 
         <div style={{ padding: 28 }}>
           <p style={{ color: '#a0a8c0', fontSize: 13, marginBottom: 24, lineHeight: 1.6 }}>
-            {selectedDates.length > 1 ? 'You have selected ' + selectedDates.length + ' days. Fill out the form below.' : 'Fill out the form below. This does not confirm the date.'}
+            {totalDays > 1 ? `You have selected ${totalDays} days. Fill out the form below and we will review your request.` : 'Fill out the form below. This does not confirm the date.'}
           </p>
 
           <div style={{ position: 'absolute', left: '-9999px', opacity: 0 }}>
@@ -121,8 +148,8 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
               <input type="tel" placeholder="+1 (555) 000-0000" value={phone} onChange={e => setPhone(e.target.value)} style={iStyle} />
             </div>
             <div>
-              <label style={lStyle}><span style={gold}><Calendar size={15} /></span>{selectedDates.length > 1 ? 'Selected Dates (' + selectedDates.length + ')' : 'Event Date'}</label>
-              <input type="text" value={formatDateRange(selectedDates)} disabled style={{ ...iStyle, background: 'rgba(255,255,255,0.03)', color: '#6b7280', cursor: 'not-allowed' }} />
+              <label style={lStyle}><span style={gold}><Calendar size={15} /></span>{totalDays > 1 ? `Selected Dates (${totalDays})` : 'Event Date'}</label>
+              <input type="text" value={formattedDates} disabled style={{ ...iStyle, background: 'rgba(255,255,255,0.03)', color: '#6b7280', cursor: 'not-allowed' }} />
             </div>
             <div>
               <label style={lStyle}><span style={gold}><FileText size={15} /></span>Event Details / Notes *</label>
@@ -132,7 +159,7 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
           </div>
 
           <button onClick={handleSubmit} disabled={loading} style={{ width: '100%', marginTop: 24, padding: 16, borderRadius: 12, background: loading ? 'rgba(212,175,55,0.3)' : 'linear-gradient(135deg, #d4af37, #f0c040)', color: '#1a1a2e', fontWeight: 700, fontSize: 15, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            {loading ? <><Loader2 size={16} />Sending...</> : 'Send Booking Request' + (selectedDates.length > 1 ? ' for ' + selectedDates.length + ' Days' : '') + ' →'}
+            {loading ? <><Loader2 size={16} />Sending...</> : 'Send Booking Request' + (totalDays > 1 ? ` for ${totalDays} Days` : '') + ' →'}
           </button>
           <p style={{ textAlign: 'center', fontSize: 11, color: '#4b5563', marginTop: 12 }}>Your date is not reserved until confirmed by our team.</p>
         </div>
