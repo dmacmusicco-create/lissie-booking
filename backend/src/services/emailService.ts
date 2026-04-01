@@ -66,13 +66,12 @@ export async function sendNewsletterToClient(client: Client, calendarUrl: string
   await resend.emails.send({
     from: 'Derrick Mackey <booking@derrickmackey.com>',
     to: client.email,
-    subject: `My Latest Availability`,
+ subject: `Derrick Mackey's Availability`,
     html: `
       <p>Dear ${client.name},</p>
       <p>I wanted to share my latest availability with you.</p>
       <p><a href="${calendarUrl}">View My Booking Calendar</a></p>
-      <p>Green days are available — simply click to request your date.</p>
+      <p>Green days are available — simply click or tap to select a single day or multiple days, then submit your request in seconds.</p>
+      <p><strong>Pro tip:</strong> Save this link to your phone! Copy <strong>https://booking.derrickmackey.com</strong> and add it to my contact card on your device. Next time you need to book me, just open my contact, tap the link, and instantly see my availability.</p>
       <p>Warm regards,<br>Derrick Mackey<br>Audio Engineer · Lissie Marion Show Productions</p>
     `,
-  });
-}
