@@ -12,7 +12,8 @@ const upload = multer({
 export const bookingRouter = Router();
 
 bookingRouter.post('/request', bookingRateLimit, upload.array('attachments', 10), async (req: Request, res: Response) => {
-  const { name, email, eventDate, notes, phone, fileLink, website } = req.body;
+  const { name, email, eventDate, notes, phone } = req.body;
+  const fileLink = req.body.fileLink && req.body.fileLink.trim() !== '' ? req.body.fileLink.trim() : undefined;
 
   if (!name || !email || !eventDate || !notes) {
     res.status(400).json({ success: false, error: 'Missing required fields' });
