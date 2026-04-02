@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { X, Calendar, User, Mail, Phone, FileText, Loader2 } from 'lucide-react';
+import { X, Calendar, User, Mail, Phone, FileText, Loader2, Paperclip, Link } from 'lucide-react';
 import { submitBookingRequest } from '@/lib/api';
 
 interface BookingModalProps {
@@ -49,11 +49,14 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
+  const [fileLink, setFileLink] = useState('');
+  const [attachments, setAttachments] = useState<File[]>([]);
   const [website, setWebsite] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const modalRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -66,6 +69,20 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
     return () => { document.body.style.overflow = ''; };
   }, []);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const maxSize = 10 * 1024 * 1024;
+    const validFiles = files.filter(f => f.size <= maxSize);
+    if (validFiles.length < files.length) {
+      setErrorMsg('Some files were too large (max 10MB each) and were not added.');
+    }
+    setAttachments(prev => [...prev, ...validFiles]);
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async () => {
     if (!name.trim() || !email.trim() || !notes.trim()) { setErrorMsg('Please fill in all required fields.'); return; }
     if (!/\S+@\S+\.\S+/.test(email)) { setErrorMsg('Please enter a valid email address.'); return; }
@@ -73,10 +90,23 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
     setErrorMsg('');
     setLoading(true);
     try {
-      await submitBookingRequest({
-        name: name.trim(), email: email.trim(), phone: phone.trim() || undefined,
-        eventDate: selectedDates.sort().join(', '), notes: notes.trim(), website,
+      const formData = new FormData();
+      formData.append('name', name.trim());
+      formData.append('email', email.trim());
+      formData.append('phone', phone.trim());
+      formData.append('eventDate', selectedDates.sort().join(', '));
+      formData.append('notes', notes.trim());
+      formData.append('fileLink', fileLink.trim());
+      formData.append('website', website);
+      attachments.forEach(file => formData.append('attachments', file));
+
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+      const res = await fetch(`${API_BASE}/api/booking/request`, {
+        method: 'POST',
+        body: formData,
       });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Failed to send');
       setSubmitted(true);
     } catch (err: any) {
       setErrorMsg(err.message || 'Something went wrong. Please try again.');
@@ -155,6 +185,60 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
               <label style={lStyle}><span style={gold}><FileText size={15} /></span>Event Details / Notes *</label>
               <textarea placeholder="Tell us about your event..." value={notes} onChange={e => setNotes(e.target.value)} rows={5} style={{ ...iStyle, resize: 'vertical', lineHeight: 1.6 }} />
               <div style={{ textAlign: 'right', fontSize: 11, color: '#6b7280', marginTop: 4 }}>{notes.length} / 2000</div>
+            </div>
+
+            {/* File attachment */}
+            <div>
+              <label style={lStyle}><span style={gold}><Paperclip size={15} /></span>Attach Files (optional, max 10MB each)</label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.txt,.csv"
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '10px 16px',
+                  background: 'rgba(255,255,255,0.05)',
+                  border: '1px dashed rgba(255,255,255,0.2)',
+                  borderRadius: 12,
+                  color: '#a0a8c0',
+                  fontSize: 13,
+                  cursor: 'pointer',
+                  width: '100%',
+                }}
+              >
+                <Paperclip size={15} style={gold} />
+                Click to attach files
+              </button>
+              {attachments.length > 0 && (
+                <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {attachments.map((file, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', background: 'rgba(212,175,55,0.05)', border: '1px solid rgba(212,175,55,0.15)', borderRadius: 8 }}>
+                      <span style={{ fontSize: 12, color: '#d4af37' }}>📎 {file.name} ({(file.size / 1024).toFixed(0)}KB)</span>
+                      <button onClick={() => removeAttachment(i)} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: 16, lineHeight: 1 }}>×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* File link */}
+            <div>
+              <label style={lStyle}><span style={gold}><Link size={15} /></span>Or paste a file link (optional)</label>
+              <input
+                type="url"
+                placeholder="Google Drive, iCloud, OneDrive, Dropbox..."
+                value={fileLink}
+                onChange={e => setFileLink(e.target.value)}
+                style={iStyle}
+              />
             </div>
           </div>
 
