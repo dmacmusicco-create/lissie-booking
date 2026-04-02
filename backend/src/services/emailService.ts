@@ -103,7 +103,7 @@ export async function sendClientConfirmation(booking: BookingRequest): Promise<v
     subject: 'Your Booking Request — ' + subjectDates,
     html: '<p>Dear ' + booking.name + ',</p>'
       + '<p>Thank you for your booking request for <strong>' + formattedDates + '</strong>' + (isMultiple ? ' (' + dates.length + ' days total)' : '') + '.</p>'
-      + (booking.fileLink ? '<p>Your file link has been received: <a href="' + booking.fileLink + '">' + booking.fileLink + '</a></p>' : '')
+      + (booking.fileLink && booking.attachments && booking.attachments.length > 0 ? '<p>Your file link and attachment(s) have been received.</p>' : booking.fileLink ? '<p>Your file link has been received.</p>' : booking.attachments && booking.attachments.length > 0 ? '<p>Your attachment(s) have been received.</p>' : '')
       + '<p>We have received your request and will be in touch shortly. This is <strong>not a confirmation</strong>.</p>'
       + '<p>Warm regards,<br>Derrick Mackey<br>Audio Engineer · Lissie Marion Show Productions</p>',
   });
