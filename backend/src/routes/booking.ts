@@ -23,7 +23,7 @@ bookingRouter.post('/request', bookingRateLimit, upload.array('attachments', 10)
 
   try {
     await sendBookingNotification({ name, email, phone, eventDate, notes, fileLink, attachments: files });
-    await sendClientConfirmation({ name, email, phone, eventDate, notes, fileLink });
+    await sendClientConfirmation({ name, email, phone, eventDate, notes, fileLink, attachments: files });
     logger.info('Booking emails sent for ' + eventDate);
     res.json({ success: true, message: 'Your booking request has been received.' });
   } catch (error: any) {
