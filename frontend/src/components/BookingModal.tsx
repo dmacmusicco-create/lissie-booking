@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { X, Calendar, User, Mail, Phone, FileText, Loader2, Paperclip, Link } from 'lucide-react';
+import { X, Calendar, User, Mail, Phone, FileText, Loader2, Paperclip, Link, Clipboard } from 'lucide-react';
 import { submitBookingRequest } from '@/lib/api';
 
 interface BookingModalProps {
@@ -23,12 +23,7 @@ function groupConsecutiveDates(dates: string[]): string[][] {
     const prev = new Date(sorted[i - 1] + 'T12:00:00');
     const curr = new Date(sorted[i] + 'T12:00:00');
     const diff = (curr.getTime() - prev.getTime()) / (1000 * 60 * 60 * 24);
-    if (diff === 1) {
-      current.push(sorted[i]);
-    } else {
-      groups.push(current);
-      current = [sorted[i]];
-    }
+    if (diff === 1) { current.push(sorted[i]); } else { groups.push(current); current = [sorted[i]]; }
   }
   groups.push(current);
   return groups;
@@ -55,8 +50,11 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showPasteBtn, setShowPasteBtn] = useState(false);
+  const [pasteBtnText, setPasteBtnText] = useState('📋 Paste');
   const modalRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const notesRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -81,6 +79,21 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
 
   const removeAttachment = (index: number) => {
     setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        setNotes(prev => prev + text);
+        setPasteBtnText('✓ Pasted!');
+        setTimeout(() => setPasteBtnText('📋 Paste'), 2000);
+        notesRef.current?.focus();
+      }
+    } catch {
+      setPasteBtnText('⚠️ Allow clipboard access');
+      setTimeout(() => setPasteBtnText('📋 Paste'), 3000);
+    }
   };
 
   const handleSubmit = async () => {
@@ -181,9 +194,44 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
               <label style={lStyle}><span style={gold}><Calendar size={15} /></span>{totalDays > 1 ? `Selected Dates (${totalDays})` : 'Event Date'}</label>
               <input type="text" value={formattedDates} disabled style={{ ...iStyle, background: 'rgba(255,255,255,0.03)', color: '#6b7280', cursor: 'not-allowed' }} />
             </div>
+
+            {/* Notes with paste button */}
             <div>
               <label style={lStyle}><span style={gold}><FileText size={15} /></span>Event Details / Notes *</label>
-              <textarea placeholder="Tell us about your event..." value={notes} onChange={e => setNotes(e.target.value)} rows={5} style={{ ...iStyle, resize: 'vertical', lineHeight: 1.6 }} />
+              <textarea
+                ref={notesRef}
+                placeholder="Tell us about your event..."
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                onFocus={() => setShowPasteBtn(true)}
+                onBlur={() => setTimeout(() => setShowPasteBtn(false), 200)}
+                rows={5}
+                style={{ ...iStyle, resize: 'vertical', lineHeight: 1.6 }}
+              />
+              {showPasteBtn && (
+                <button
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={handlePaste}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    marginTop: 6,
+                    padding: '6px 14px',
+                    background: 'rgba(212,175,55,0.1)',
+                    border: '1px solid rgba(212,175,55,0.3)',
+                    borderRadius: 8,
+                    color: '#d4af37',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <Clipboard size={13} />
+                  {pasteBtnText}
+                </button>
+              )}
               <div style={{ textAlign: 'right', fontSize: 11, color: '#6b7280', marginTop: 4 }}>{notes.length} / 2000</div>
             </div>
 
