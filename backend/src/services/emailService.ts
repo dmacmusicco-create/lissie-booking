@@ -77,7 +77,8 @@ export async function sendBookingNotification(booking: BookingRequest): Promise<
 
   const attachments = (booking.attachments || []).map(file => ({
     filename: file.originalname,
-    content: file.buffer,
+    content: file.buffer.toString('base64'),
+  }));
   }));
 
   await resend.emails.send({
