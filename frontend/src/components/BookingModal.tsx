@@ -205,6 +205,7 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
                 onChange={e => setNotes(e.target.value)}
                 onFocus={() => setShowPasteBtn(true)}
                 onBlur={() => setTimeout(() => setShowPasteBtn(false), 200)}
+                maxLength={10000}
                 rows={5}
                 style={{ ...iStyle, resize: 'vertical', lineHeight: 1.6 }}
               />
@@ -232,7 +233,7 @@ export default function BookingModal({ date, dates, onClose }: BookingModalProps
                   {pasteBtnText}
                 </button>
               )}
-              <div style={{ textAlign: 'right', fontSize: 11, color: '#6b7280', marginTop: 4 }}>{notes.length} / 2000</div>
+              <div style={{ textAlign: 'right', fontSize: 11, color: '#6b7280', marginTop: 4 }}>{notes.length} / 10000</div>
             </div>
 
             {/* File attachment */}
